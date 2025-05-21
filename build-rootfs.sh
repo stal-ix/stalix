@@ -134,11 +134,13 @@ rm -f .stage1
 
 # Build rootfs tarball
 cd ..
-tar -cvJf stalix.tar.xz -C stalix .
+# Cross-compilation is not supported by this script at this time
+tarball_name=stalix-$(uname -m)-$(date +%Y%m%d).tar.xz
+tar -cvJf "$tarball_name" -C stalix .
 
 # Cleanup
 userdel -rf ix
 unlink stalix/usr
 rm -rf stalix
 
-echo "Successfully built stal/IX rootfs tarball at $PWD/stalix.tar.xz"
+echo "Successfully built stal/IX rootfs tarball at $PWD/$tarball_name"
