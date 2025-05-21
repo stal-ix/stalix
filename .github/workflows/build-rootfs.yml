@@ -1,0 +1,40 @@
+name: Build stal/IX rootfs tarball
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: stalix-repo
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y bubblewrap clang git lld llvm passwd python3-minimal tar util-linux xz-utils
+          sudo update-alternatives --install /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-18 100
+          
+      - name: Build rootfs tarball
+        run: |
+          sudo bash -c 'while true; do sleep 60; chmod u+w -R stalix/ix/trash/*; rm -rf stalix/ix/trash/*; done' &
+          sudo stalix-repo/build-rootfs.sh
+
+      - name: Set release tag
+        id: set_tag
+        run: echo "RDATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "${{ env.RDATE }}"
+          tag_name: "${{ env.RDATE }}"
+          prerelease: false
+          draft: false
+          generate_release_notes: false
+          make_latest: true
+          files: |
+            stalix-*-*.tar.xz
