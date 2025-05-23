@@ -21,7 +21,7 @@ jobs:
       - name: Build rootfs tarball
         run: |
           sudo bash -c 'while true; do sleep 60; chmod u+w -R stalix/ix/trash/*; rm -rf stalix/ix/trash/*; done' &
-          sudo stalix-repo/build-rootfs.sh
+          sudo stalix-repo/build-rootfs.sh -g
 
       - name: Set release tag
         id: set_tag

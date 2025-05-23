@@ -4,6 +4,23 @@
 # build-rootfs.sh
 # Created by Earldridge Jazzed Pineda
 
+# Check for command-line options
+help() {
+    echo "Usage: $0 [option...]
+    
+Options:
+-g Enable fix for GitHub Actions
+-h Show this help message"
+}
+
+while getopts gh opt; do
+    case $opt in
+        g) gha_fix=1;;
+        h) help; exit;;
+        ?) help; exit 1;;
+    esac
+done
+
 # Check for superuser privileges
 if [ "$(id -u)" != 0 ]; then
     echo "Script must be run with superuser privileges"
@@ -38,6 +55,9 @@ if [ ! -e .stage1 ]; then
 
     # Add a user "ix" who will own all packages in the system (note: UID 1000 is important)
     useradd -ou 1000 ix
+    if [ -n "$gha_fix" ]; then
+        usermod -a -G docker ix
+    fi
 
     # Prepare a managed dir owned by user ix, in /ix, /ix/realm, etc
     mkdir ix
