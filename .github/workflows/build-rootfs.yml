@@ -20,7 +20,16 @@ jobs:
           
       - name: Build rootfs tarball
         run: |
-          sudo bash -c 'while true; do sleep 60; chmod u+w -R stalix/ix/trash/*; rm -rf stalix/ix/trash/*; done' &
+          sudo bash -c '
+          while true; do
+            if [[ -d "stalix/ix/trash" ]]; then
+              echo -e "\n[BG] Purging '\''stalix/ix/trash'\''"
+              du -sh "stalix/ix/trash" 2>/dev/null ; echo -e "\n"
+              find "stalix/ix/trash" -mindepth 1 -delete &>/dev/null
+            fi
+            sleep 120
+          done
+          ' &
           sudo stalix-repo/build-rootfs.sh -g
 
       - name: Set release tag
