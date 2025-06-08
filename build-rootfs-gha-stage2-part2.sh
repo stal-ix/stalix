@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2016
 
-# build-rootfs-gha-stage2.sh
+# build-rootfs-gha-stage2-part2.sh
 # Created by Earldridge Jazzed Pineda
 
 # Check for superuser privileges
@@ -42,9 +42,6 @@ cd stalix || { echo "Failed to cd to rootfs directory"; exit 1; }
 mkdir -p "${PWD#/}"
 ln -s /ix "${PWD#/}"/ix
 
-# Allow read access to resolv.conf as UID 1000
-mkdir -p var/run/resolvconf
-
 # Change to stal/IX root
 bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm bash -c '
 
@@ -59,11 +56,6 @@ export IX_ROOT=/ix
 export IX_EXEC_KIND=system
 
 cd /home/ix/ix
-# very important step, rebuild system realm
-./ix mut system || { echo "Failed to rebuild system realm"; exit 1; }
-./ix gc lnk url
-chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
-
 # Rebuild the world
 ./ix mut $(./ix list) || { echo "Failed to rebuild the world"; exit 1; }
 ./ix gc lnk url

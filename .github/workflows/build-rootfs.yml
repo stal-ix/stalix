@@ -3,7 +3,7 @@ name: Build stal/IX rootfs tarball
 on: workflow_dispatch
 
 jobs:
-  stage1:
+  stage1-part1:
     runs-on: ubuntu-24.04
     outputs:
       cdate: ${{ steps.set_date.outputs.cdate }}
@@ -20,6 +20,56 @@ jobs:
           sudo apt install -y clang git lld llvm make passwd python3-minimal tar util-linux xz-utils
           sudo update-alternatives --install /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-18 100
           
+      - name: Build stage 1 (part 1) rootfs tarball
+        run: |
+          sudo bash -c '
+          while true; do
+            if [[ -d "stalix/ix/trash" ]] && [[ "$(du -s "stalix/ix/trash" | cut -f1)" -gt 1000 ]]; then
+              echo -e "\n[BG] Purging '\''stalix/ix/trash'\''"
+              du -sh "stalix/ix/trash" 2>/dev/null ; echo -e "\n"
+              find "stalix/ix/trash" -mindepth 1 -delete &>/dev/null
+            fi
+            sleep 120
+          done
+          ' &
+          sudo stalix-repo/build-rootfs-gha-stage1-part1.sh
+
+      - name: Set cache date
+        id: set_date
+        run: |
+          echo "CDATE=$(echo stalix-*-*-stage1-part1.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_ENV
+          echo "cdate=$(echo stalix-*-*-stage1-part1.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_OUTPUT
+
+      - name: Save stage 1 (part 1) rootfs tarball to cache
+        uses: actions/cache/save@v4
+        with:
+          path: stalix-*-*-stage1-part1.tar.xz
+          key: stage1-part1-${{ env.CDATE }}
+
+  stage1-part2:
+    runs-on: ubuntu-24.04
+    needs: stage1-part1
+    outputs:
+      cdate: ${{ steps.set_date.outputs.cdate }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: stalix-repo
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y clang lld llvm make passwd python3-minimal tar util-linux xz-utils
+          sudo update-alternatives --install /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-18 100
+
+      - name: Restore stage 1 (part 1) rootfs tarball from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: stalix-*-*-stage1-part1.tar.xz
+          key: stage1-part1-${{ needs.stage1-part1.outputs.cdate }}
+
       - name: Build stage 1 rootfs tarball
         run: |
           sudo bash -c '
@@ -32,7 +82,10 @@ jobs:
             sleep 120
           done
           ' &
-          sudo stalix-repo/build-rootfs-gha-stage1.sh
+          sudo stalix-repo/build-rootfs-gha-stage1-part2.sh stalix-*-*-stage1-part1.tar.xz
+
+      - name: Remove stage 1 (part 1) rootfs tarball
+        run: sudo rm -f stalix-*-*-stage1-part1.tar.xz
 
       - name: Set cache date
         id: set_date
@@ -46,8 +99,60 @@ jobs:
           path: stalix-*-*-stage1.tar.xz
           key: stage1-${{ env.CDATE }}
 
-  stage2:
-    needs: stage1
+  stage2-part1:
+    runs-on: ubuntu-24.04
+    needs: stage1-part2
+    outputs:
+      cdate: ${{ steps.set_date.outputs.cdate }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: stalix-repo
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y bubblewrap tar xz-utils
+
+      - name: Restore stage 1 rootfs tarball from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: stalix-*-*-stage1.tar.xz
+          key: stage1-${{ needs.stage1-part2.outputs.cdate }}
+          
+      - name: Build stage 2 (part 1) rootfs tarball
+        run: |
+          sudo bash -c '
+          while true; do
+            if [[ -d "stalix/ix/trash" ]] && [[ "$(du -s "stalix/ix/trash" | cut -f1)" -gt 1000 ]]; then
+              echo -e "\n[BG] Purging '\''stalix/ix/trash'\''"
+              du -sh "stalix/ix/trash" 2>/dev/null ; echo -e "\n"
+              find "stalix/ix/trash" -mindepth 1 -delete &>/dev/null
+            fi
+            sleep 120
+          done
+          ' &
+          sudo stalix-repo/build-rootfs-gha-stage2-part1.sh stalix-*-*-stage1.tar.xz
+          
+      - name: Remove stage 1 rootfs tarball
+        run: sudo rm -f stalix-*-*-stage1.tar.xz
+
+      - name: Set cache date
+        id: set_date
+        run: |
+          echo "CDATE=$(echo stalix-*-*-stage2-part1.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_ENV
+          echo "cdate=$(echo stalix-*-*-stage2-part1.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_OUTPUT
+
+      - name: Save stage 2 (part 1) rootfs tarball to cache
+        uses: actions/cache/save@v4
+        with:
+          path: stalix-*-*-stage2-part1.tar.xz
+          key: stage2-part1-${{ env.CDATE }}
+
+  stage2-part2:
+    needs: stage2-part1
     runs-on: ubuntu-24.04
 
     steps:
@@ -60,13 +165,13 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y bubblewrap tar xz-utils
-      
-      - name: Restore stage 1 rootfs tarball from cache
+
+      - name: Restore stage 2 (part 1) rootfs tarball from cache
         uses: actions/cache/restore@v4
         with:
-          path: stalix-*-*-stage1.tar.xz
-          key: stage1-${{ needs.stage1.outputs.cdate }}
-          
+          path: stalix-*-*-stage2-part1.tar.xz
+          key: stage2-part1-${{ needs.stage2-part1.outputs.cdate }}
+
       - name: Build rootfs tarball
         run: |
           sudo bash -c '
@@ -79,10 +184,10 @@ jobs:
             sleep 120
           done
           ' &
-          sudo stalix-repo/build-rootfs-gha-stage2.sh stalix-*-*-stage1.tar.xz
-          
-      - name: Remove stage 1 rootfs tarball
-        run: sudo rm -f stalix-*-*-stage1.tar.xz
+          sudo stalix-repo/build-rootfs-gha-stage2-part2.sh stalix-*-*-stage2-part1.tar.xz
+
+      - name: Remove stage 2 (part 1) rootfs tarball
+        run: sudo rm -f stalix-*-*-stage2-part1.tar.xz
 
       - name: Set release tag
         id: set_tag

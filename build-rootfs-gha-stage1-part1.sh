@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2016
 
-# build-rootfs-gha-stage1.sh
+# build-rootfs-gha-stage1-part1.sh
 # Created by Earldridge Jazzed Pineda
 
 # Check for superuser privileges
@@ -67,18 +67,12 @@ export IX_EXEC_KIND=local
 ./ix mut system set/stalix --failsafe --mingetty etc/zram/0 || { echo "Failed to bootstrap system realm"; exit 1; }
 ./ix gc lnk url
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
-./ix mut root set/install || { echo "Failed to bootstrap root realm"; exit 1; }
-./ix gc lnk url
-chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
-./ix mut boot set/boot/all || { echo "Failed to bootstrap boot realm"; exit 1; }
-./ix gc lnk url
-chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 ' || exit 1
 
 # Build rootfs tarball
 cd ..
 # Cross-compilation is not supported by this script at this time
-tarball_name=stalix-$(uname -m)-$(date +%Y%m%d)-stage1.tar.xz
+tarball_name=stalix-$(uname -m)-$(date +%Y%m%d)-stage1-part1.tar.xz
 tar -cvJf "$tarball_name" -C stalix .
 
 # Cleanup
@@ -86,4 +80,4 @@ userdel -rf ix
 unlink stalix/usr
 rm -rf stalix
 
-echo "Successfully built stal/IX stage 1 rootfs tarball at $PWD/$tarball_name"
+echo "Successfully built stal/IX stage 1 (part 1) rootfs tarball at $PWD/$tarball_name"
