@@ -17,7 +17,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt update
-          sudo apt install -y clang git lld llvm passwd python3-minimal tar util-linux xz-utils
+          sudo apt install -y clang git lld llvm make passwd python3-minimal tar util-linux xz-utils
           sudo update-alternatives --install /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-18 100
           
       - name: Build stage 1 rootfs tarball

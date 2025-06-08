@@ -11,7 +11,7 @@ if [ "$(id -u)" != 0 ]; then
 fi
 
 # Check for required commands
-for command in bwrap clang clang++ clang-cpp git lld llvm-ar llvm-nm llvm-ranlib python3 su tar useradd userdel xz; do
+for command in bwrap clang clang++ clang-cpp git lld llvm-ar llvm-nm llvm-ranlib make python3 su tar useradd userdel xz; do
     command -v $command > /dev/null || missing_commands+=" $command"
 done
 if [ -n "$missing_commands" ]; then
