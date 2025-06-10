@@ -50,7 +50,7 @@ su ix -c '
 
 # Fetch IX package manager, will be used later, from ix user before reboot and by root after reboot
 # we do not want to change our CWD
-(cd home/ix; git clone https://github.com/stal-ix/ix.git)
+(cd home/ix; git clone https://github.com/pg83/ix.git)
 
 # Some quirks:
 # like tmp dir, so realm symlink can be modified only by its creator/owner
