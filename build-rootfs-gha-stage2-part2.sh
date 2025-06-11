@@ -48,14 +48,16 @@ bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resol
 # Manually mount procfs at /proc
 mount -t proc proc /proc
 
-# Temporarily patch the jail script
-sed -i -e '\''8imkdir -p ${where}'"$PWD"\'' -e '\''8iln -s /ix ${where}'"$PWD"'/ix'\'' -e '\''32icp /etc/resolv.conf etc/'\'' /bin/jail
-
 # Set some variables
 export IX_ROOT=/ix
 export IX_EXEC_KIND=system
 
 cd /home/ix/ix
+# very important step, rebuild system realm
+./ix mut system || { echo "Failed to rebuild system realm"; exit 1; }
+./ix gc lnk url
+chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
+
 # Rebuild the world
 ./ix mut $(./ix list) || { echo "Failed to rebuild the world"; exit 1; }
 ./ix gc lnk url

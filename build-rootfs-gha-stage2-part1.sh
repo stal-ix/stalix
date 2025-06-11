@@ -60,7 +60,7 @@ export IX_EXEC_KIND=system
 
 cd /home/ix/ix
 # very important step, rebuild system realm
-./ix mut system || { echo "Failed to rebuild system realm"; exit 1; }
+timeout 19800 unshare -p -f -r ./ix mut system
 ./ix gc lnk url
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 ' || exit 1

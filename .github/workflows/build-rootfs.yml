@@ -20,6 +20,9 @@ jobs:
           sudo apt install -y clang git lld llvm make passwd python3-minimal tar util-linux xz-utils
           sudo update-alternatives --install /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-18 100
           
+      - name: Disable unprivileged user namespace restrictions
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Build stage 1 (part 1) rootfs tarball
         run: |
           sudo bash -c '
@@ -122,6 +125,9 @@ jobs:
           path: stalix-*-*-stage1.tar.xz
           key: stage1-${{ needs.stage1-part2.outputs.cdate }}
           
+      - name: Disable unprivileged user namespace restrictions
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Build stage 2 (part 1) rootfs tarball
         run: |
           sudo bash -c '

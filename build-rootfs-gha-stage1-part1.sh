@@ -11,7 +11,7 @@ if [ "$(id -u)" != 0 ]; then
 fi
 
 # Check for required commands
-for command in clang clang++ clang-cpp git lld llvm-ar llvm-nm llvm-ranlib make python3 su tar useradd userdel usermod xz; do
+for command in clang clang++ clang-cpp git lld llvm-ar llvm-nm llvm-ranlib make python3 su tar unshare useradd userdel usermod xz; do
     command -v $command > /dev/null || missing_commands+=" $command"
 done
 if [ -n "$missing_commands" ]; then
@@ -64,7 +64,7 @@ export IX_ROOT=$PWD/ix
 # And run IX package manager to populate the root fs with bootstrap tools
 cd home/ix/ix
 export IX_EXEC_KIND=local
-./ix mut system set/stalix --failsafe --mingetty etc/zram/0 || { echo "Failed to bootstrap system realm"; exit 1; }
+timeout 19800 unshare -p -f -r ./ix mut system set/stalix --failsafe --mingetty etc/zram/0
 ./ix gc lnk url
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 ' || exit 1
