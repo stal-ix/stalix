@@ -39,7 +39,7 @@ tar -xpvJf "$1" -C stalix
 cd stalix || { echo "Failed to cd to rootfs directory"; exit 1; }
 
 # Change to stal/IX root
-bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm bash -c '
+bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm --setenv HOME /home/root bash -c '
 
 # Manually mount procfs at /proc
 mount -t proc proc /proc

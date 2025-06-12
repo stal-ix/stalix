@@ -92,7 +92,7 @@ ln -s /ix "${PWD#/}"/ix
 mkdir -p var/run/resolvconf
 
 # Change to stal/IX root
-bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm bash -c '
+bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm --setenv HOME /home/root bash -c '
 
 # Manually mount procfs at /proc
 mount -t proc proc /proc
