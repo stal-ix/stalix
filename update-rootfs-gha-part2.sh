@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2016
 
-# build-rootfs-gha-stage2-part1.sh
+# update-rootfs-gha-part2.sh
 # Created by Earldridge Jazzed Pineda
 
 # Check for superuser privileges
@@ -38,45 +38,45 @@ mkdir stalix
 tar -xpvJf "$1" -C stalix
 cd stalix || { echo "Failed to cd to rootfs directory"; exit 1; }
 
-# Fix broken symbolic links
-mkdir -p "${PWD#/}"
-ln -s /ix "${PWD#/}"/ix
-
-# Allow read access to resolv.conf as UID 1000
-mkdir -p var/run/resolvconf
-
 # Change to stal/IX root
 bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm bash -c '
 
 # Manually mount procfs at /proc
 mount -t proc proc /proc
 
-# Temporarily patch the jail script
-sed -i -e '\''8imkdir -p ${where}'"$PWD"\'' -e '\''8iln -s /ix ${where}'"$PWD"'/ix'\'' -e '\''32icp /etc/resolv.conf etc/'\'' /bin/jail
-
 # Set some variables
-export IX_ROOT=/ix
-export IX_EXEC_KIND=system
+source /etc/profile
+source /etc/env
 
 cd /home/ix/ix
-# very important step, rebuild system realm
-timeout 19800 unshare -p -f -r ./ix mut system
+# Update the system realm
+./ix mut system || { echo "Failed to update system realm"; exit 1; }
 ./ix gc lnk url
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
-' || exit 1
 
-# Cleanup rootfs
-unlink "${PWD#/}"/ix
-rmdir -p "${PWD#/}"
+# Update the world
+./ix mut $(./ix list) || { echo "Failed to update the world"; exit 1; }
+./ix gc lnk url
+chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
+
+# Regenerate the random seed
+./ix mut system --seed="$(cat /dev/random | head -c 1000 | base64)" || { echo "Failed to regenerate random seed"; exit 1; }
+./ix gc lnk url
+chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
+
+# Remove duplicate and unneeded packages
+./ix gc
+chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
+' || exit 1
 
 # Build rootfs tarball
 cd ..
 # Cross-compilation is not supported by this script at this time
-tarball_name=stalix-$(uname -m)-$(date +%Y%m%d)-stage2-part1.tar.xz
+tarball_name=stalix-$(uname -m)-$(date +%Y%m%d).tar.xz
 tar -cvJf "$tarball_name" -C stalix .
 
 # Cleanup
 unlink stalix/usr
 rm -rf stalix
 
-echo "Successfully built stal/IX stage 2 (part 1) rootfs tarball at $PWD/$tarball_name"
+echo "Successfully updated stal/IX rootfs tarball at $PWD/$tarball_name"

@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2016
 
-# build-rootfs-gha-stage2-part2.sh
+# update-rootfs-gha-part1.sh
 # Created by Earldridge Jazzed Pineda
 
 # Check for superuser privileges
@@ -37,10 +37,6 @@ fi
 mkdir stalix
 tar -xpvJf "$1" -C stalix
 cd stalix || { echo "Failed to cd to rootfs directory"; exit 1; }
-    
-# Fix broken symbolic links
-mkdir -p "${PWD#/}"
-ln -s /ix "${PWD#/}"/ix
 
 # Change to stal/IX root
 bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm bash -c '
@@ -48,43 +44,32 @@ bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resol
 # Manually mount procfs at /proc
 mount -t proc proc /proc
 
+# Temporarily patch the jail script
+sed -i -e '\''32icp /etc/resolv.conf etc/'\'' /bin/jail
+
 # Set some variables
-export IX_ROOT=/ix
-export IX_EXEC_KIND=system
+source /etc/profile
+source /etc/env
 
 cd /home/ix/ix
-# very important step, rebuild system realm
-./ix mut system || { echo "Failed to rebuild system realm"; exit 1; }
-./ix gc lnk url
-chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
+# Update the IX repository
+git config --global --add safe.directory /home/ix/ix
+git pull
 
-# Rebuild the world
-./ix mut $(./ix list) || { echo "Failed to rebuild the world"; exit 1; }
+# Update the system realm
+timeout 19800 ./ix mut system
 ./ix gc lnk url
-chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
-
-# Add some uniqueness into system, without this some packages refuse to install
-./ix mut system --seed="$(cat /dev/random | head -c 1000 | base64)" || { echo "Failed to add random seed"; exit 1; }
-./ix gc lnk url
-chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
-
-# Remove duplicate and unneeded packages
-./ix gc
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 ' || exit 1
-
-# Cleanup rootfs
-unlink "${PWD#/}"/ix
-rmdir -p "${PWD#/}"
 
 # Build rootfs tarball
 cd ..
 # Cross-compilation is not supported by this script at this time
-tarball_name=stalix-$(uname -m)-$(date +%Y%m%d).tar.xz
+tarball_name=stalix-$(uname -m)-$(date +%Y%m%d)-part1.tar.xz
 tar -cvJf "$tarball_name" -C stalix .
 
 # Cleanup
 unlink stalix/usr
 rm -rf stalix
 
-echo "Successfully built stal/IX rootfs tarball at $PWD/$tarball_name"
+echo "Successfully updated stal/IX part 1 rootfs tarball at $PWD/$tarball_name"
