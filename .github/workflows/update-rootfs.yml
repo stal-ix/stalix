@@ -25,6 +25,9 @@ jobs:
           latest: true
           fileName: 'stalix-*-*.tar.xz'
 
+      - name: Enable unprivileged user namespaces
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Build part 1 rootfs tarball
         run: |
           sudo bash -c '

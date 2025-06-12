@@ -53,7 +53,6 @@ source /etc/env
 
 cd /home/ix/ix
 # Update the IX repository
-git config --global --add safe.directory /home/ix/ix
 git pull
 
 # Update the system realm
