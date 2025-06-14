@@ -1,6 +1,9 @@
 name: Update stal/IX rootfs tarball
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 5'
 
 jobs:
   part1:
@@ -98,6 +101,13 @@ jobs:
       - name: Set release tag
         id: set_tag
         run: echo "RDATE=$(echo stalix-*-*.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_ENV
+        
+      - name: Update download link
+        uses: jaywcjlove/github-action-modify-file-content@main
+        with:
+          path: README.md
+          body: "[here](https://github.com/stal-ix/stalix/releases/tag/${{ env.RDATE }})"
+          message: Release ${{ env.RDATE }}
 
       - name: Create release
         uses: softprops/action-gh-release@v2
