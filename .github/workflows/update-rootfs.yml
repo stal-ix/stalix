@@ -1,0 +1,122 @@
+name: Update stal/IX rootfs tarball
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 5'
+
+jobs:
+  part1:
+    runs-on: ubuntu-24.04
+    outputs:
+      cdate: ${{ steps.set_date.outputs.cdate }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: stalix-repo
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y bubblewrap tar xz-utils
+
+      - name: Download rootfs tarball from latest release
+        uses: robinraju/release-downloader@v1
+        with:
+          latest: true
+          fileName: 'stalix-*-*.tar.xz'
+
+      - name: Enable unprivileged user namespaces
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Build part 1 rootfs tarball
+        run: |
+          sudo bash -c '
+          while true; do
+            if [[ -d "stalix/ix/trash" ]] && [[ "$(du -s "stalix/ix/trash" | cut -f1)" -gt 1000 ]]; then
+              echo -e "\n[BG] Purging '\''stalix/ix/trash'\''"
+              du -sh "stalix/ix/trash" 2>/dev/null ; echo -e "\n"
+              find "stalix/ix/trash" -mindepth 1 -delete &>/dev/null
+            fi
+            sleep 120
+          done
+          ' &
+          sudo stalix-repo/update-rootfs-gha-part1.sh stalix-*-*.tar.xz
+
+      - name: Set cache date
+        id: set_date
+        run: |
+          echo "CDATE=$(echo stalix-*-*-part1.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_ENV
+          echo "cdate=$(echo stalix-*-*-part1.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_OUTPUT
+
+      - name: Save part 1 rootfs tarball to cache
+        uses: actions/cache/save@v4
+        with:
+          path: stalix-*-*-part1.tar.xz
+          key: part1-${{ env.CDATE }}
+
+  part2:
+    needs: part1
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: stalix-repo
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y bubblewrap tar xz-utils
+
+      - name: Restore part 1 rootfs tarball from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: stalix-*-*-part1.tar.xz
+          key: part1-${{ needs.part1.outputs.cdate }}
+
+      - name: Enable unprivileged user namespaces
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Build rootfs tarball
+        run: |
+          sudo bash -c '
+          while true; do
+            if [[ -d "stalix/ix/trash" ]] && [[ "$(du -s "stalix/ix/trash" | cut -f1)" -gt 1000 ]]; then
+              echo -e "\n[BG] Purging '\''stalix/ix/trash'\''"
+              du -sh "stalix/ix/trash" 2>/dev/null ; echo -e "\n"
+              find "stalix/ix/trash" -mindepth 1 -delete &>/dev/null
+            fi
+            sleep 120
+          done
+          ' &
+          sudo stalix-repo/update-rootfs-gha-part2.sh stalix-*-*-part1.tar.xz
+
+      - name: Remove part 1 rootfs tarball
+        run: sudo rm -f stalix-*-*-part1.tar.xz
+
+      - name: Set release tag
+        id: set_tag
+        run: echo "RDATE=$(echo stalix-*-*.tar.xz | cut -d . -f 1 | cut -d - -f 3)" >> $GITHUB_ENV
+        
+      - name: Update download link
+        uses: jaywcjlove/github-action-modify-file-content@main
+        with:
+          path: README.md
+          body: "[here](https://github.com/stal-ix/stalix/releases/tag/${{ env.RDATE }})"
+          message: Release ${{ env.RDATE }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "${{ env.RDATE }}"
+          tag_name: "${{ env.RDATE }}"
+          prerelease: false
+          draft: false
+          generate_release_notes: false
+          make_latest: true
+          files: |
+            stalix-*-*.tar.xz
