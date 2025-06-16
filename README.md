@@ -13,8 +13,6 @@ STAtically LInked LInuX, based on IX package manager
 
 This repository hosts stal/IX rootfs tarballs for x86_64, built weekly using a GitHub Actions workflow ([update-rootfs.yml](.github/workflows/update-rootfs.yml)).
 
-Attempts to create a workflow that builds rootfs tarballs from scratch have failed. The last commit to use this procedure is 770e5341104539f4bb3df3da51dc617743becbd9.
-
 Also in this repository are a few scripts for working with stal/IX rootfs tarballs:
 * **build-rootfs.sh** - builds a stal/IX rootfs tarball compressed using XZ from scratch, using a 2-stage process. Requires `bwrap`, `clang`, `clang++`, `clang-cpp`, `git`, `lld`, `llvm-ar`, `llvm-nm`, `llvm-ranlib`, `make`, `python3`, `su`, `tar`, `useradd`, `userdel`, and `xz`. Cross-compilation is not supported at this time.
 * **update-rootfs.sh** - updates an existing stal/IX rootfs tarball to the most recent commit in the [stable branch of IX](https://github.com/stal-ix/ix). Requires `bwrap`, `tar`, and `xz`.
