@@ -66,7 +66,7 @@ if [ ! -e .stage1 ]; then
     # And run IX package manager to populate the root fs with bootstrap tools
     cd home/ix/ix
     export IX_EXEC_KIND=local
-    ./ix mut system set/stalix --failsafe --mingetty etc/zram/0 || { echo "Failed to bootstrap system realm"; exit 1; }
+    ./ix mut system set/stalix --failsafe etc/zram/0 || { echo "Failed to bootstrap system realm"; exit 1; }
     ./ix gc lnk url
     chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
     ./ix mut root set/install || { echo "Failed to bootstrap root realm"; exit 1; }
