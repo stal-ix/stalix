@@ -60,7 +60,7 @@ chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 
 # Regenerate the random seed
-./ix mut system --seed="$(cat /dev/random | head -c 1000 | base64)" || { echo "Failed to regenerate random seed"; exit 1; }
+./ix mut system --seed="stal/IX" || { echo "Failed to regenerate random seed"; exit 1; }
 ./ix gc lnk url
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 

@@ -116,7 +116,7 @@ chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 
 # Add some uniqueness into system, without this some packages refuse to install
-./ix mut system --seed="$(cat /dev/random | head -c 1000 | base64)" || { echo "Failed to add random seed"; exit 1; }
+./ix mut system --seed="stal/IX" || { echo "Failed to add random seed"; exit 1; }
 ./ix gc lnk url
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 
