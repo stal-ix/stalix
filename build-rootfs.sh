@@ -34,7 +34,7 @@ if [ ! -e .stage1 ]; then
     ln -s ix/realm/system/etc etc
     ln -s / usr
 
-    mkdir -p home/root var sys proc dev
+    mkdir -p home/root var sys proc dev tmp
 
     # Add a user "ix" who will own all packages in the system (note: UID 1000 is important)
     useradd -ou 1000 ix
