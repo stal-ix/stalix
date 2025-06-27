@@ -38,9 +38,6 @@ mkdir stalix
 tar -xpvJf "$1" -C stalix
 cd stalix || { echo "Failed to cd to rootfs directory"; exit 1; }
 
-# TEMPORARY
-mkdir tmp
-
 # Change to stal/IX root
 bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resolv.conf --perms 1777 --tmpfs /dev/shm --setenv HOME /home/root bash -c '
 
@@ -59,8 +56,7 @@ cd /home/ix/ix
 git pull
 
 # Update the system realm
-# TEMPORARY
-timeout 19800 ./ix mut system set/stalix --mingetty=-
+timeout 19800 ./ix mut system
 ./ix gc lnk url
 chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT/trash/*
 ' || exit 1
