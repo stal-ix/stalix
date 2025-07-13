@@ -35,7 +35,8 @@ fi
 
 # Prepare rootfs directory
 mkdir stalix
-tar -xpvJf "$1" -C stalix
+echo Extracting "$1"
+tar -xpJf "$1" -C stalix
 cd stalix || { echo "Failed to cd to rootfs directory"; exit 1; }
 
 # Change to stal/IX root
@@ -62,7 +63,8 @@ chmod u+w -R $IX_ROOT/build/* $IX_ROOT/trash/*; rm -rf $IX_ROOT/build/* $IX_ROOT
 cd ..
 # Cross-compilation is not supported by this script at this time
 tarball_name=stalix-$(uname -m)-$(date +%Y%m%d)-part1.tar.xz
-tar -cvJf "$tarball_name" -C stalix .
+echo Creating "$tarball_name"
+tar -cJf "$tarball_name" -C stalix .
 
 # Cleanup
 unlink stalix/usr
