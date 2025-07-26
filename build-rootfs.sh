@@ -98,7 +98,7 @@ bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resol
 mount -t proc proc /proc
 
 # Temporarily patch the jail script
-sed -i -e '\''8imkdir -p ${where}'"$PWD"\'' -e '\''8iln -s /ix ${where}'"$PWD"'/ix'\'' -e '\''32icp /etc/resolv.conf etc/'\'' /bin/jail
+sed -i -e '\''8imkdir -p ${where}'"$PWD"\'' -e '\''8iln -s /ix ${where}'"$PWD"'/ix'\'' /bin/jail
 
 # Set some variables
 export IX_ROOT=/ix

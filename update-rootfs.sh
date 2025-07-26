@@ -44,9 +44,6 @@ bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resol
 # Manually mount procfs at /proc
 mount -t proc proc /proc
 
-# Temporarily patch the jail script
-sed -i -e '\''32icp /etc/resolv.conf etc/'\'' /bin/jail
-
 # Set some variables
 source /etc/profile
 source /etc/env
