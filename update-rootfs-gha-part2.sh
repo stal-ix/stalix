@@ -46,8 +46,8 @@ bwrap --bind . / --dev /dev --ro-bind /etc/resolv.conf /var/run/resolvconf/resol
 mount -t proc proc /proc
 
 # Set some variables
+export PATH="/ix/realm/${USER}/bin:${PATH}"
 source /etc/profile
-source /etc/env
 
 cd /home/ix/ix
 # Update the system realm
