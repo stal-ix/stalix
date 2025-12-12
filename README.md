@@ -9,7 +9,7 @@
 
 STAtically LInked LInuX, based on IX package manager
 
-# Download the latest release of stal/IX <!--GAMFC-->[here](https://github.com/stal-ix/stalix/releases/tag/20251205)<!--GAMFC-END-->
+# Download the latest release of stal/IX <!--GAMFC-->[here](https://github.com/stal-ix/stalix/releases/tag/20251212)<!--GAMFC-END-->
 
 This repository hosts stal/IX rootfs tarballs for x86_64, built weekly using a GitHub Actions workflow ([update-rootfs.yml](.github/workflows/update-rootfs.yml)).
 
